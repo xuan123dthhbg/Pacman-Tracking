@@ -3,8 +3,9 @@
 # Licensing Information:  You are free to use or extend these projects for
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
-# attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+# attribution to UC Berkeley, including a link to
+# http://inst.eecs.berkeley.edu/~cs188/pacman/pacman.html
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -133,24 +134,19 @@ class GreedyBustersAgent(BustersAgent):
         First computes the most likely position of each ghost that has
         not yet been captured, then chooses an action that brings
         Pacman closer to the closest ghost (according to mazeDistance!).
-
         To find the mazeDistance between any two positions, use:
           self.distancer.getDistance(pos1, pos2)
-
         To find the successor position of a position after an action:
           successorPosition = Actions.getSuccessor(position, action)
-
         livingGhostPositionDistributions, defined below, is a list of
         util.Counter objects equal to the position belief
         distributions for each of the ghosts that are still alive.  It
         is defined based on (these are implementation details about
         which you need not be concerned):
-
           1) gameState.getLivingGhosts(), a list of booleans, one for each
              agent, indicating whether or not the agent is alive.  Note
              that pacman is always agent 0, so the ghosts are agents 1,
              onwards (just as before).
-
           2) self.ghostBeliefs, the list of belief distributions for each
              of the ghosts (including ghosts that are not alive).  The
              indices into this list should be 1 less than indices into the
@@ -163,4 +159,21 @@ class GreedyBustersAgent(BustersAgent):
             [beliefs for i, beliefs in enumerate(self.ghostBeliefs)
              if livingGhosts[i+1]]
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        likelyGhostPositions = []
+        for ghostPosDist in livingGhostPositionDistributions:
+            maxProb = -1
+            for pos in ghostPosDist.keys():
+                if ghostPosDist[pos] > maxProb:
+                    likelyPos = pos
+                    maxProb = ghostPosDist[pos]
+            likelyGhostPositions += [likelyPos]
+
+        minDistance = float("inf")
+        for ghostPos in likelyGhostPositions:
+            if minDistance > self.distancer.getDistance(pacmanPosition, ghostPos):
+                minDistance = self.distancer.getDistance(pacmanPosition, ghostPos)
+                closeGhost = ghostPos
+
+        for action in legal:
+            if self.distancer.getDistance(Actions.getSuccessor(pacmanPosition, action), closeGhost) < self.distancer.getDistance(pacmanPosition, closeGhost):
+                return action
